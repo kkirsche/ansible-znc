@@ -1,0 +1,20 @@
+---
+
+- name: Add NGINX repository
+  copy:
+    src: nginx.repo
+    dest: /etc/yum.repos.d/nginx.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Add NGINX RPM Key
+  rpm_key:
+    state: present
+    key: http://nginx.org/keys/nginx_signing.key
+
+- name: Install NGINX
+  yum:
+    name: nginx
+    state: latest
+    update_cache: yes

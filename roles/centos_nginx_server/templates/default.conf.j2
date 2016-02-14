@@ -1,0 +1,76 @@
+{% if ssl_enabled %}
+server {
+    listen       80;
+    server_name  {{ server_name }};
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name {{ server_name }};
+    access_log  {{ nginx_access_log_path }}{{ nginx_access_log_file }}  main;
+    {% if strict_transport_security_enabled %}
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+    {% endif %}
+
+    {% if xss_protection_enabled %}
+    add_header X-XSS-Protection "1; mode=block";
+    {% endif %}
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options SAMEORIGIN;
+
+    # enable session resumption to improve https performance
+    # http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
+    ssl_session_cache shared:SSL:50m;
+
+    # enables server-side protection from BEAST attacks
+    # http://blog.ivanristic.com/2013/09/is-beast-still-a-threat.html
+    ssl_prefer_server_ciphers on;
+
+    # disable SSLv3(enabled by default since nginx 0.8.19) since it's less secure then TLS http://en.wikipedia.org/wiki/Secure_Sockets_Layer#SSL_3.0
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+
+    client_max_body_size 10M;
+
+    location / {
+            proxy_pass http://localhost:2368/;
+            proxy_set_header Host $host;
+            proxy_buffering off;
+    }
+
+    ssl on;
+    ssl_certificate {{ ssl_certificate_path }};
+    ssl_certificate_key {{ ssl_certificate_key }};
+
+    ssl_session_timeout {{ ssl_session_timeout }};
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    location ~ /\.ht {
+        deny  all;
+    }
+}
+{% else %}
+server {
+    listen       80;
+    server_name  {{ server_name }};
+
+    client_max_body_size 10M;
+    access_log  {{ nginx_access_log_path }}{{ nginx_access_log_file }}  main;
+
+    location / {
+      proxy_pass http://localhost:2368/;
+      proxy_set_header Host $host;
+      proxy_buffering off;
+    }
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    location ~ /\.ht {
+        deny  all;
+    }
+}
+{% endif %}
