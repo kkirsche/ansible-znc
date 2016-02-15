@@ -1,0 +1,6 @@
+---
+- name: Install ZNC
+  yum:
+    name: znc
+    state: latest
+    update_cache: yes

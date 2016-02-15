@@ -2,10 +2,10 @@
 - hosts: server
   user: root
   vars_files:
-    - roles/centos_nginx_server/vars/default.yml
+    - roles/centos_znc/vars/default.yml
 
   roles:
     - {
-        role: centos_nginx_server,
+        role: centos_znc,
         when: ansible_distribution == "CentOS"
       }

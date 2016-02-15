@@ -1,0 +1,2 @@
+- include: install_znc.yml
+- include: configure_znc.yml

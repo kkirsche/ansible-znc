@@ -1,0 +1,20 @@
+---
+
+- name: Make sure FirewallD is started
+  service:
+    name: firewalld
+    state: started
+
+- name: Add ZNC firewall service file
+  copy:
+    src: znc.xml
+    dest: /usr/lib/firewalld/services/znc.xml
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Reload FirewallD (keeping state)
+  command: firewall-cmd --reload
+
+- name: Open ZNC port (30,000)
+  command: firewall-cmd --add-service=znc --zone=public --permanent
